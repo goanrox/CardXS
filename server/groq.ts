@@ -26,6 +26,11 @@ export async function callGroq(prompt: string, systemPrompt: string, cachePrefix
 
   console.log(`[Groq Debug] Sending request to https://api.groq.com/openai/v1/chat/completions`);
   
+  if (typeof fetch === 'undefined') {
+    console.error("[Groq Debug] fetch is not defined in this environment. Please ensure you are using Node.js 18+ or install node-fetch.");
+    throw new Error("Server environment issue: fetch is not defined.");
+  }
+
   const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: {

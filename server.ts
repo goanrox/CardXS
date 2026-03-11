@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import { callGroq } from "./server/groq";
@@ -29,7 +30,10 @@ Ensure the output is valid JSON.`;
       res.json(result);
     } catch (error: any) {
       console.error("Paycheck API Error:", error);
-      res.status(500).json({ error: error.message || "Internal server error" });
+      const errorMessage = error.message === "GROQ_API_KEY is not set." 
+        ? "Groq API Key is missing. Please add GROQ_API_KEY to your environment variables in the Settings menu."
+        : error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
     }
   });
 
@@ -53,7 +57,10 @@ Ensure the output is valid JSON.`;
       res.json(result);
     } catch (error: any) {
       console.error("Statement API Error:", error);
-      res.status(500).json({ error: error.message || "Internal server error" });
+      const errorMessage = error.message === "GROQ_API_KEY is not set." 
+        ? "Groq API Key is missing. Please add GROQ_API_KEY to your environment variables in the Settings menu."
+        : error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
     }
   });
 
@@ -80,7 +87,10 @@ Ensure the output is valid JSON.`;
       res.json(result);
     } catch (error: any) {
       console.error("Bill API Error:", error);
-      res.status(500).json({ error: error.message || "Internal server error" });
+      const errorMessage = error.message === "GROQ_API_KEY is not set." 
+        ? "Groq API Key is missing. Please add GROQ_API_KEY to your environment variables in the Settings menu."
+        : error.message || "Internal server error";
+      res.status(500).json({ error: errorMessage });
     }
   });
 
@@ -100,7 +110,10 @@ Ensure the output is valid JSON. Keep responses concise and practical.`;
       res.json(result);
     } catch (error: any) {
       console.error("Coach API Error:", error);
-      res.status(500).json({ error: "Sorry, the AI coach is temporarily unavailable. Please try again." });
+      const errorMessage = error.message === "GROQ_API_KEY is not set." 
+        ? "Groq API Key is missing. Please add GROQ_API_KEY to your environment variables in the Settings menu."
+        : "Sorry, the AI coach is temporarily unavailable. Please try again.";
+      res.status(500).json({ error: errorMessage });
     }
   });
 
@@ -121,7 +134,10 @@ Ensure the output is valid JSON. Keep responses concise and practical.`;
       res.json(result);
     } catch (error: any) {
       console.error("Coach API Error:", error);
-      res.status(500).json({ error: "Sorry, the AI coach is temporarily unavailable. Please try again." });
+      const errorMessage = error.message === "GROQ_API_KEY is not set." 
+        ? "Groq API Key is missing. Please add GROQ_API_KEY to your environment variables in the Settings menu."
+        : "Sorry, the AI coach is temporarily unavailable. Please try again.";
+      res.status(500).json({ error: errorMessage });
     }
   });
 
