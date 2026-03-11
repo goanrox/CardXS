@@ -9,6 +9,7 @@ import { FinanceCoach } from './components/FinanceCoach';
 import { ExplainMyBill } from './components/ExplainMyBill';
 import { MoneyHealthScore, HealthScoreData } from './components/MoneyHealthScore';
 import { AnimatedHome, AnimatedWallet, AnimatedTools, AnimatedCoach } from './components/AnimatedNavIcons';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Button, Card } from './components/ui';
 import { motion } from 'motion/react';
 import { Home, Wallet, Wrench, MessageCircle, CreditCard, DollarSign, FileText, Calculator, Receipt, ChevronLeft } from 'lucide-react';
@@ -142,6 +143,8 @@ function PageWrapper({ children, title, description }: { children: React.ReactNo
 }
 
 export default function App() {
+  console.log('[App] Initializing...');
+  
   const [healthData, setHealthData] = useState<HealthScoreData>({
     utilization: null,
     interestRisk: null,
@@ -154,105 +157,107 @@ export default function App() {
   };
 
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-app-bg selection:bg-app-primary/20 flex flex-col">
-        <Toaster position="top-center" />
-        <Header />
-        
-        <main className="flex-1 pb-24 md:pb-32">
-          <Routes>
-            <Route path="/" element={
-              <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 md:py-8 space-y-6 md:space-y-8">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <h1 className="text-2xl md:text-4xl font-semibold tracking-tight text-app-text mb-1 md:mb-2">
-                    Dashboard
-                  </h1>
-                  <p className="text-[14px] md:text-lg text-app-text-secondary tracking-tight mb-4 md:mb-6">
-                    Your financial health at a glance.
-                  </p>
-                  <MoneyHealthScore data={healthData} />
-                </motion.div>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <div className="min-h-screen bg-app-bg selection:bg-app-primary/20 flex flex-col">
+          <Toaster position="top-center" />
+          <Header />
+          
+          <main className="flex-1 pb-24 md:pb-32">
+            <Routes>
+              <Route path="/" element={
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 md:py-8 space-y-6 md:space-y-8">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <h1 className="text-2xl md:text-4xl font-semibold tracking-tight text-app-text mb-1 md:mb-2">
+                      Dashboard
+                    </h1>
+                    <p className="text-[14px] md:text-lg text-app-text-secondary tracking-tight mb-4 md:mb-6">
+                      Your financial health at a glance.
+                    </p>
+                    <MoneyHealthScore data={healthData} />
+                  </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <h2 className="text-lg md:text-2xl font-semibold tracking-tight text-app-text mb-3 md:mb-4">Tools</h2>
-                  <ToolGrid />
-                </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <h2 className="text-lg md:text-2xl font-semibold tracking-tight text-app-text mb-3 md:mb-4">Tools</h2>
+                    <ToolGrid />
+                  </motion.div>
+                </div>
+              } />
+
+              <Route path="/tools" element={
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 md:py-10">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <h1 className="text-xl md:text-4xl font-semibold tracking-tight text-app-text mb-1 md:mb-2">All Tools</h1>
+                    <p className="text-[14px] md:text-lg text-app-text-secondary tracking-tight mb-4 md:mb-6">
+                      Select a tool to get started.
+                    </p>
+                    <ToolGrid />
+                  </motion.div>
+                </div>
+              } />
+
+              <Route path="/best-card" element={
+                <PageWrapper title="Maximize Rewards" description="Find the best card in your wallet for any purchase.">
+                  <BestCardTool onResult={(isBest: boolean) => updateHealthData({ usingBestCard: isBest })} />
+                </PageWrapper>
+              } />
+
+              <Route path="/explain-paycheck" element={
+                <PageWrapper title="Demystify Income" description="See exactly where your hard-earned money is going.">
+                  <PaycheckExplainer onResult={(takeHome: number) => updateHealthData({ takeHomePercentage: takeHome })} />
+                </PageWrapper>
+              } />
+
+              <Route path="/explain-statement" element={
+                <PageWrapper title="Avoid Debt Traps" description="Understand the true cost of carrying a balance.">
+                  <StatementExplainer onResult={(utilization: number, risk: any) => updateHealthData({ utilization, interestRisk: risk })} />
+                </PageWrapper>
+              } />
+
+              <Route path="/true-cost" element={
+                <PageWrapper title="The Real Price" description="See what a purchase actually costs after interest.">
+                  <TrueCostCalculator />
+                </PageWrapper>
+              } />
+
+              <Route path="/explain-bill" element={
+                <PageWrapper title="Explain My Bill" description="Understand any financial statement or bill instantly.">
+                  <ExplainMyBill />
+                </PageWrapper>
+              } />
+
+              <Route path="/coach" element={
+                <FinanceCoach />
+              } />
+            </Routes>
+          </main>
+
+          <BottomNav />
+
+          <footer className="hidden md:block border-t border-app-border/50 py-12 px-6 bg-white mt-auto">
+            <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-[14px] text-app-text-secondary font-medium">
+              <p>© 2026 CardXS. All rights reserved.</p>
+              <div className="flex gap-8">
+                <a href="#" className="hover:text-app-text transition-colors">Privacy</a>
+                <a href="#" className="hover:text-app-text transition-colors">Terms</a>
+                <a href="#" className="hover:text-app-text transition-colors">Security</a>
               </div>
-            } />
-
-            <Route path="/tools" element={
-              <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 md:py-10">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <h1 className="text-xl md:text-4xl font-semibold tracking-tight text-app-text mb-1 md:mb-2">All Tools</h1>
-                  <p className="text-[14px] md:text-lg text-app-text-secondary tracking-tight mb-4 md:mb-6">
-                    Select a tool to get started.
-                  </p>
-                  <ToolGrid />
-                </motion.div>
-              </div>
-            } />
-
-            <Route path="/best-card" element={
-              <PageWrapper title="Maximize Rewards" description="Find the best card in your wallet for any purchase.">
-                <BestCardTool onResult={(isBest: boolean) => updateHealthData({ usingBestCard: isBest })} />
-              </PageWrapper>
-            } />
-
-            <Route path="/explain-paycheck" element={
-              <PageWrapper title="Demystify Income" description="See exactly where your hard-earned money is going.">
-                <PaycheckExplainer onResult={(takeHome: number) => updateHealthData({ takeHomePercentage: takeHome })} />
-              </PageWrapper>
-            } />
-
-            <Route path="/explain-statement" element={
-              <PageWrapper title="Avoid Debt Traps" description="Understand the true cost of carrying a balance.">
-                <StatementExplainer onResult={(utilization: number, risk: any) => updateHealthData({ utilization, interestRisk: risk })} />
-              </PageWrapper>
-            } />
-
-            <Route path="/true-cost" element={
-              <PageWrapper title="The Real Price" description="See what a purchase actually costs after interest.">
-                <TrueCostCalculator />
-              </PageWrapper>
-            } />
-
-            <Route path="/explain-bill" element={
-              <PageWrapper title="Explain My Bill" description="Understand any financial statement or bill instantly.">
-                <ExplainMyBill />
-              </PageWrapper>
-            } />
-
-            <Route path="/coach" element={
-              <FinanceCoach />
-            } />
-          </Routes>
-        </main>
-
-        <BottomNav />
-
-        <footer className="hidden md:block border-t border-app-border/50 py-12 px-6 bg-white mt-auto">
-          <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-[14px] text-app-text-secondary font-medium">
-            <p>© 2026 CardXS. All rights reserved.</p>
-            <div className="flex gap-8">
-              <a href="#" className="hover:text-app-text transition-colors">Privacy</a>
-              <a href="#" className="hover:text-app-text transition-colors">Terms</a>
-              <a href="#" className="hover:text-app-text transition-colors">Security</a>
             </div>
-          </div>
-        </footer>
-      </div>
-    </BrowserRouter>
+          </footer>
+        </div>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }

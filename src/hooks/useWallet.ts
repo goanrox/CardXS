@@ -9,30 +9,35 @@ export function useWallet() {
 
   // Load from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
         const parsed = JSON.parse(saved);
         // Migration logic if needed
-        const migrated = parsed.map((item: WalletItem) => {
+        const migrated = Array.isArray(parsed) ? parsed.map((item: WalletItem) => {
           if (item.cardId === 'bilt-mastercard') {
             return { ...item, cardId: 'bilt-blue' };
           }
+          if (item.cardId === 'freedom-unlimited') {
+            return { ...item, cardId: 'chase-freedom-unlimited' };
+          }
           return item;
-        });
+        }) : [];
         setWalletItems(migrated);
-      } catch (e) {
-        console.error('Failed to parse wallet items', e);
-        setWalletItems([]);
+      } else {
+        // Initialize with neutral demo cards if empty
+        const demoCards: WalletItem[] = [
+          { instanceId: Math.random().toString(36).substring(2, 9), cardId: 'chase-sapphire-preferred' },
+          { instanceId: Math.random().toString(36).substring(2, 9), cardId: 'chase-freedom-unlimited' }
+        ];
+        setWalletItems(demoCards);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(demoCards));
       }
-    } else {
-      // Initialize with neutral demo cards if empty
-      const demoCards: WalletItem[] = [
-        { instanceId: Math.random().toString(36).substring(2, 9), cardId: 'chase-sapphire-preferred' },
-        { instanceId: Math.random().toString(36).substring(2, 9), cardId: 'freedom-unlimited' }
-      ];
-      setWalletItems(demoCards);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(demoCards));
+    } catch (e) {
+      console.error('Failed to load wallet items', e);
+      setWalletItems([]);
     }
     setIsLoaded(true);
   }, []);
@@ -49,7 +54,13 @@ export function useWallet() {
         cardId
       };
       const next = [...prev, newItem];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        } catch (e) {
+          console.error('Failed to save to localStorage', e);
+        }
+      }
       return next;
     });
   }, []);
@@ -57,7 +68,13 @@ export function useWallet() {
   const removeCard = useCallback((instanceId: string) => {
     setWalletItems(prev => {
       const next = prev.filter(item => item.instanceId !== instanceId);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        } catch (e) {
+          console.error('Failed to save to localStorage', e);
+        }
+      }
       return next;
     });
   }, []);
@@ -69,7 +86,13 @@ export function useWallet() {
           ? { ...item, nickname: nickname.trim() || undefined } 
           : item
       );
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        } catch (e) {
+          console.error('Failed to save to localStorage', e);
+        }
+      }
       return next;
     });
   }, []);
