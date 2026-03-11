@@ -235,9 +235,7 @@ export default function App() {
             } />
 
             <Route path="/coach" element={
-              <PageWrapper title="Your Personal Guide" description="Get unbiased answers to your financial questions.">
-                <FinanceCoach />
-              </PageWrapper>
+              <FinanceCoach />
             } />
           </Routes>
         </main>

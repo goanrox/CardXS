@@ -41,8 +41,20 @@ export function FinanceCoach() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto w-full flex flex-col h-[calc(100vh-180px)] md:h-[calc(100vh-220px)]">
-      <div className="flex-1 overflow-y-auto custom-scrollbar pb-6 px-1">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="flex flex-col h-[calc(100dvh-64px)] md:h-[calc(100vh-80px)] max-w-3xl mx-auto w-full px-4 sm:px-6"
+    >
+      {/* Page Header - Title & Description */}
+      <div className="py-4 md:py-8 text-center md:text-left shrink-0">
+        <h1 className="text-xl md:text-3xl font-semibold tracking-tight text-app-text mb-1 md:mb-2">Your Personal Guide</h1>
+        <p className="text-[14px] md:text-[16px] text-app-text-secondary tracking-tight">Get unbiased answers to your financial questions.</p>
+      </div>
+
+      {/* Messages Area - Scrollable */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar px-1 min-h-0">
         <AnimatePresence mode="wait">
           {!result && !loading ? (
             <motion.div 
@@ -50,7 +62,7 @@ export function FinanceCoach() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="flex flex-col items-center justify-center h-full text-center space-y-6 mt-12"
+              className="flex flex-col items-center justify-center min-h-[300px] text-center space-y-6"
             >
               <div className="w-16 h-16 bg-gradient-to-br from-app-primary to-blue-400 rounded-full flex items-center justify-center shadow-lg shadow-app-primary/20 mb-2">
                 <MessageSquare size={28} className="text-white" />
@@ -72,7 +84,6 @@ export function FinanceCoach() {
                     key={i}
                     onClick={() => {
                       setText(prompt);
-                      // handleAsk(); // Optional: auto-submit
                     }}
                     className="px-4 py-3 rounded-2xl bg-white border border-app-border/60 text-app-text-secondary hover:bg-[#F5F5F7] hover:text-app-text hover:border-app-border text-[14px] font-medium transition-all text-left shadow-sm"
                   >
@@ -86,7 +97,7 @@ export function FinanceCoach() {
               key="result"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-6 pt-4"
+              className="space-y-6 pt-4 pb-8"
             >
               {/* User Message */}
               <div className="flex justify-end">
@@ -129,40 +140,42 @@ export function FinanceCoach() {
         </AnimatePresence>
       </div>
 
-      {/* Input Area */}
-      <div className="pt-4 pb-2 bg-app-bg">
-        {error && <p className="text-[13px] text-red-500 font-medium mb-2 px-2">{error}</p>}
-        <div className="relative flex items-end gap-2 bg-white border border-app-border/60 rounded-[24px] p-2 shadow-sm focus-within:ring-2 focus-within:ring-app-primary/20 focus-within:border-app-primary/30 transition-all">
-          <Textarea 
-            placeholder="Ask a financial question..." 
-            rows={1}
-            value={text}
-            onChange={(e: any) => {
-              setText(e.target.value);
-              e.target.style.height = 'auto';
-              e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
-            }}
-            disabled={loading}
-            className="!bg-transparent !border-none !ring-0 !shadow-none !py-2.5 !px-3 min-h-[44px] max-h-[120px]"
-            onKeyDown={(e: any) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleAsk();
-              }
-            }}
-          />
-          <Button 
-            className="!w-10 !h-10 !p-0 !rounded-full shrink-0 mb-0.5 mr-0.5" 
-            onClick={handleAsk} 
-            disabled={!text.trim() || loading}
-          >
-            {loading ? <Loader2 size={18} className="animate-spin" /> : <MessageSquare size={18} className="ml-[-2px] mt-[2px]" />}
-          </Button>
+      {/* Input Area - Positioned above BottomNav on mobile */}
+      <div className="shrink-0 pt-4 pb-[calc(72px+2rem+env(safe-area-inset-bottom))] md:pb-10 bg-app-bg">
+        <div className="max-w-2xl mx-auto">
+          {error && <p className="text-[13px] text-red-500 font-medium mb-2 px-2">{error}</p>}
+          <div className="relative flex items-end gap-2 bg-white border border-app-border/60 rounded-[24px] p-2 shadow-sm focus-within:ring-2 focus-within:ring-app-primary/20 focus-within:border-app-primary/30 transition-all">
+            <Textarea 
+              placeholder="Ask a financial question..." 
+              rows={1}
+              value={text}
+              onChange={(e: any) => {
+                setText(e.target.value);
+                e.target.style.height = 'auto';
+                e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+              }}
+              disabled={loading}
+              className="!bg-transparent !border-none !ring-0 !shadow-none !py-2.5 !px-3 min-h-[44px] max-h-[120px]"
+              onKeyDown={(e: any) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleAsk();
+                }
+              }}
+            />
+            <Button 
+              className="!w-10 !h-10 !p-0 !rounded-full shrink-0 mb-0.5 mr-0.5" 
+              onClick={handleAsk} 
+              disabled={!text.trim() || loading}
+            >
+              {loading ? <Loader2 size={18} className="animate-spin" /> : <MessageSquare size={18} className="ml-[-2px] mt-[2px]" />}
+            </Button>
+          </div>
+          <p className="text-center text-[11px] text-app-text-secondary mt-3 font-medium">
+            AI can make mistakes. Consider verifying important information.
+          </p>
         </div>
-        <p className="text-center text-[11px] text-app-text-secondary mt-3 font-medium">
-          AI can make mistakes. Consider verifying important information.
-        </p>
       </div>
-    </div>
+    </motion.div>
   );
 }
