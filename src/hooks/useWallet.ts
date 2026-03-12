@@ -3,7 +3,7 @@ import { WalletItem } from '../lib/cards';
 import { STORAGE_VERSION } from '../constants';
 
 const STORAGE_KEY = `cardxs_wallet_items_${STORAGE_VERSION}`;
-const OLD_STORAGE_KEY = 'cardxs_wallet_items';
+const OLD_STORAGE_KEYS = ['cardxs_wallet_items', 'wallet'];
 
 export function useWallet() {
   const [walletItems, setWalletItems] = useState<WalletItem[]>([]);
@@ -14,17 +14,15 @@ export function useWallet() {
     if (typeof window === 'undefined') return;
 
     try {
-      let saved = localStorage.getItem(STORAGE_KEY);
-      
-      // Migration from v1 if needed
-      if (!saved) {
-        const oldData = localStorage.getItem(OLD_STORAGE_KEY);
-        if (oldData) {
-          console.log('[useWallet] Migrating data from old storage key');
-          saved = oldData;
-          // We keep it for now, but we'll save to new key
+      // Clean up old storage keys to prevent stale seeded data from repopulating
+      OLD_STORAGE_KEYS.forEach(key => {
+        if (localStorage.getItem(key)) {
+          console.log(`[useWallet] Clearing old storage key: ${key}`);
+          localStorage.removeItem(key);
         }
-      }
+      });
+
+      let saved = localStorage.getItem(STORAGE_KEY);
 
       if (saved) {
         const parsed = JSON.parse(saved);
@@ -56,30 +54,21 @@ export function useWallet() {
         // If we migrated or just loaded, ensure it's in the new key
         localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
       } else {
-        // Initialize with neutral demo cards if empty
-        console.log('[useWallet] Initializing with default demo cards');
-        const demoCards: WalletItem[] = [
-          { instanceId: Math.random().toString(36).substring(2, 9), cardId: 'chase-sapphire-preferred' },
-          { instanceId: Math.random().toString(36).substring(2, 9), cardId: 'chase-freedom-unlimited' }
-        ];
-        setWalletItems(demoCards);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(demoCards));
+        // Initialize with empty wallet
+        console.log('[useWallet] Initializing with empty wallet');
+        setWalletItems([]);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
       }
     } catch (e) {
       console.error('[useWallet] Failed to load or parse wallet items. Resetting storage.', e);
       // Clear potentially corrupted data
       try {
         localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem(OLD_STORAGE_KEY);
       } catch (err) {
         // Ignore errors during removal
       }
       
-      const defaultCards: WalletItem[] = [
-        { instanceId: Math.random().toString(36).substring(2, 9), cardId: 'chase-sapphire-preferred' },
-        { instanceId: Math.random().toString(36).substring(2, 9), cardId: 'chase-freedom-unlimited' }
-      ];
-      setWalletItems(defaultCards);
+      setWalletItems([]);
     }
     setIsLoaded(true);
   }, []);

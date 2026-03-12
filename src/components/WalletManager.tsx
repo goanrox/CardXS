@@ -58,10 +58,15 @@ export function WalletManager({ walletItems, onUpdateWallet }: WalletManagerProp
 
       {walletItems.length === 0 ? (
         <div className="text-center py-8 bg-white rounded-[20px] border border-dashed border-app-border">
-          <p className="text-[14px] text-app-text-secondary">Your wallet is empty.</p>
-          <button onClick={() => setIsSearchOpen(true)} className="text-app-primary font-medium text-[14px] mt-1.5 hover:underline">
-            Add your first card
-          </button>
+          <p className="text-[14px] font-medium text-app-text mb-1">Your wallet is empty</p>
+          <p className="text-[13px] text-app-text-secondary mb-3">Add your first card to get personalized recommendations.</p>
+          <Button 
+            variant="outline" 
+            className="!py-2 !px-4 !h-auto !text-[13px] bg-white mx-auto"
+            onClick={() => setIsSearchOpen(true)}
+          >
+            <Plus size={14} className="mr-1.5" /> Add Card
+          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

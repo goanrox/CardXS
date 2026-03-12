@@ -236,9 +236,19 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
           </AnimatePresence>
         </div>
         {walletItems.length === 0 && (
-          <p className="text-[13px] text-amber-600 mt-1 bg-amber-50 p-2.5 rounded-xl border border-amber-100">
-            Add cards to your wallet to get personalized recommendations.
-          </p>
+          <div className="mt-2 p-4 bg-[#F5F5F7] rounded-xl border border-app-border/60 text-center">
+            <p className="text-[14px] font-medium text-app-text mb-1">Your wallet is empty</p>
+            <p className="text-[13px] text-app-text-secondary mb-3">
+              Add your first card to get personalized recommendations.
+            </p>
+            <Button 
+              variant="outline" 
+              className="!py-2 !px-4 !h-auto !text-[13px] bg-white"
+              onClick={() => setIsSearchOpen(true)}
+            >
+              <Plus size={14} className="mr-1.5" /> Add Card
+            </Button>
+          </div>
         )}
       </div>
 
