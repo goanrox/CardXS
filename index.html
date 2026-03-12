@@ -13,15 +13,32 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
+      // Service Worker handling for stale cache issues
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then(registration => {
-            console.log('SW registered: ', registration);
-          }).catch(registrationError => {
-            console.log('SW registration failed: ', registrationError);
+          // Unregister any existing service workers to clear stale caches
+          // especially if they are using a cache-first strategy that causes white-screens
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            for (let registration of registrations) {
+              registration.unregister();
+              console.log('[SW] Unregistered stale service worker');
+            }
           });
+
+          // Clear all caches
+          if (window.caches) {
+            caches.keys().then(names => {
+              for (let name of names) {
+                caches.delete(name);
+                console.log('[Cache] Deleted stale cache:', name);
+              }
+            });
+          }
         });
       }
+      
+      // Log app info for debugging
+      console.log('[App] Environment: ' + (window.location.hostname === 'localhost' ? 'development' : 'production'));
     </script>
   </body>
 </html>

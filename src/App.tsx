@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { BestCardTool } from './components/BestCardTool';
@@ -13,6 +13,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { Button, Card } from './components/ui';
 import { motion } from 'motion/react';
 import { Home, Wallet, Wrench, MessageCircle, CreditCard, DollarSign, FileText, Calculator, Receipt, ChevronLeft } from 'lucide-react';
+import { APP_VERSION, STORAGE_VERSION } from './constants';
 
 function Header() {
   const location = useLocation();
@@ -143,6 +144,11 @@ function PageWrapper({ children, title, description }: { children: React.ReactNo
 }
 
 export default function App() {
+  useEffect(() => {
+    console.log(`[App] Version: ${APP_VERSION}`);
+    console.log(`[App] Storage Version: ${STORAGE_VERSION}`);
+  }, []);
+
   console.log('[App] Initializing...');
   
   const [healthData, setHealthData] = useState<HealthScoreData>({
