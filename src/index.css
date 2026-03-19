@@ -11,6 +11,53 @@
   --color-app-primary: #0071E3;
   --color-app-success: #00C805;
   --color-app-border: rgba(0, 0, 0, 0.06);
+
+  --breakpoint-xs: 375px;
+}
+
+.cardxs-premium-header {
+  @apply sticky top-0 z-50 h-[60px] w-full flex items-center px-4 transition-all duration-300;
+}
+
+.logo-greeting-wrapper {
+  @apply flex items-center gap-3 max-w-full overflow-hidden;
+}
+
+.cardxs-logo-container {
+  @apply flex items-center shrink-0;
+}
+
+.cardxs-logo-image {
+  @apply h-8 w-auto object-contain;
+}
+
+.cardxs-logo-fallback {
+  @apply text-white text-lg tracking-tight hidden;
+}
+
+.text-elegant-semibold {
+  @apply font-semibold;
+}
+
+.header-greeting {
+  @apply text-[13px] font-bold text-white tracking-tight truncate;
+}
+
+.text-premium {
+  @apply antialiased;
+}
+
+.user-name {
+  @apply text-white;
+}
+
+.anim-fade-scale-in {
+  animation: fadeScaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeScaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 body {
@@ -30,4 +77,88 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: rgba(0,0,0,0.1);
   border-radius: 10px;
+}
+
+@keyframes cardHeroReveal {
+  0% { transform: translateY(0) scale(1) rotateZ(0deg) rotateX(0deg); }
+  15% { transform: translateY(4px) scale(0.97) rotateZ(0deg) rotateX(0deg); }
+  40% { transform: translateY(-22px) scale(1.05) rotateZ(-4deg) rotateX(4deg); }
+  55% { transform: translateY(-24px) scale(1.07) rotateZ(-2deg) rotateX(6deg); }
+  70% { transform: translateY(-24px) scale(1.05) rotateZ(2deg) rotateX(2deg); }
+  100% { transform: translateY(0) scale(1) rotateZ(0deg) rotateX(0deg); }
+}
+
+@keyframes lightSweep {
+  0% { transform: translateX(-150%) skewX(-25deg); opacity: 0; }
+  40% { transform: translateX(-150%) skewX(-25deg); opacity: 0; }
+  60% { opacity: 0.85; }
+  85% { transform: translateX(250%) skewX(-25deg); opacity: 0; }
+  100% { transform: translateX(250%) skewX(-25deg); opacity: 0; }
+}
+
+@keyframes cardShadowReveal {
+  0%, 30% { box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+  60%, 100% { box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
+}
+
+@keyframes chipDarken {
+  0%, 30% { background: linear-gradient(180deg, #2C2C2E 0%, #000000 100%); }
+  50% { background: linear-gradient(180deg, #1C1C1E 0%, #000000 100%); }
+  70%, 100% { background: linear-gradient(180deg, #2C2C2E 0%, #000000 100%); }
+}
+
+@keyframes ambientDrift {
+  0% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(-5%) translateY(2%); }
+  100% { transform: translateX(0) translateY(0); }
+}
+
+@keyframes ambientFloat {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-3%) scale(1.05); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+@keyframes ambientStreak {
+  0% { transform: translateX(-10%) translateY(-10%) rotate(-12deg); }
+  50% { transform: translateX(10%) translateY(10%) rotate(-12deg); }
+  100% { transform: translateX(-10%) translateY(-10%) rotate(-12deg); }
+}
+
+@keyframes ambientPulse {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+  50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+}
+
+.animate-card-hero {
+  animation: cardHeroReveal 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-card-shadow {
+  animation: cardShadowReveal 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-chip-darken {
+  animation: chipDarken 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-light-sweep {
+  animation: lightSweep 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-ambient-drift {
+  animation: ambientDrift 20s ease-in-out infinite;
+}
+
+.animate-ambient-float {
+  animation: ambientFloat 15s ease-in-out infinite;
+}
+
+.animate-ambient-streak {
+  animation: ambientStreak 25s ease-in-out infinite;
+}
+
+.animate-ambient-pulse {
+  animation: ambientPulse 12s ease-in-out infinite;
 }

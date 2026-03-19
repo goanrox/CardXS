@@ -9,40 +9,229 @@ import { FinanceCoach } from './components/FinanceCoach';
 import { ExplainMyBill } from './components/ExplainMyBill';
 import { MoneyHealthScore, HealthScoreData } from './components/MoneyHealthScore';
 import { AnimatedHome, AnimatedWallet, AnimatedTools, AnimatedCoach } from './components/AnimatedNavIcons';
+import { AnimatedLogo } from './components/AnimatedLogo';
+import { InsightChip } from './components/InsightChip';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Button, Card } from './components/ui';
-import { motion } from 'motion/react';
-import { Home, Wallet, Wrench, MessageCircle, CreditCard, DollarSign, FileText, Calculator, Receipt, ChevronLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Home, Wallet, Wrench, MessageCircle, CreditCard, DollarSign, FileText, Calculator, Receipt, ChevronLeft, Edit2, User, X } from 'lucide-react';
 import { APP_VERSION, STORAGE_VERSION } from './constants';
+import { usePersonalization } from './hooks/usePersonalization';
+import { Input } from './components/ui';
+
+function AmbientHeaderBackground({ pathname }: { pathname: string }) {
+  let theme = 'home';
+  if (pathname === '/best-card') theme = 'wallet';
+  else if (pathname === '/coach') theme = 'coach';
+  else if (pathname !== '/') theme = 'tools';
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      <AnimatePresence mode="wait">
+        {theme === 'home' && (
+          <motion.div 
+            key="home"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+            className="absolute inset-0"
+          >
+            {/* deep navy + subtle copper glow */}
+            <div className="absolute inset-0 bg-[#0A192F]" />
+            <div className="absolute w-[150%] h-[150%] -top-[25%] -left-[25%] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#B87333]/20 via-transparent to-transparent blur-[80px]" />
+          </motion.div>
+        )}
+
+        {theme === 'wallet' && (
+          <motion.div 
+            key="wallet"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+            className="absolute inset-0"
+          >
+            {/* warm leather brown gradient + soft gold light */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#3D2B1F] to-[#5C4033]" />
+            <div className="absolute w-[120%] h-[120%] -top-[10%] -left-[10%] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#FFD700]/15 via-transparent to-transparent blur-[70px]" />
+          </motion.div>
+        )}
+
+        {theme === 'tools' && (
+          <motion.div 
+            key="tools"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+            className="absolute inset-0"
+          >
+            {/* graphite gray + minimal neon accent */}
+            <div className="absolute inset-0 bg-[#2F2F2F]" />
+            <div className="absolute w-[200%] h-[100%] -top-[20%] -left-[50%] bg-gradient-to-r from-transparent via-[#00FFCC]/10 to-transparent blur-[50px]" />
+          </motion.div>
+        )}
+
+        {theme === 'coach' && (
+          <motion.div 
+            key="coach"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+            className="absolute inset-0"
+          >
+            {/* calm sky blue + sunrise tint */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#87CEEB] to-[#B0E0E6]" />
+            <div className="absolute w-[100%] h-[100%] top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#FFCC33]/20 via-transparent to-transparent blur-[60px]" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Glass overlay with grain and inner highlight */}
+      <div className="absolute inset-0 backdrop-blur-2xl bg-white/10">
+        {/* Inner highlight */}
+        <div className="absolute inset-0 border-b border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]" />
+        {/* Grain simulation overlay */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+      </div>
+    </div>
+  );
+}
 
 function Header() {
   const location = useLocation();
   const isHome = location.pathname === '/';
+  const { userName, updateName } = usePersonalization();
+  const [greeting, setGreeting] = useState('');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState(userName);
+  const [logoError, setLogoError] = useState(false);
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    let timeGreeting = '';
+    if (hour < 12) timeGreeting = 'Good morning';
+    else if (hour < 17) timeGreeting = 'Good afternoon';
+    else timeGreeting = 'Good evening';
+    
+    setGreeting(timeGreeting);
+  }, []);
+
+  const handleSaveName = () => {
+    updateName(tempName);
+    setIsEditingName(false);
+  };
 
   return (
-    <header className="sticky top-0 z-50 bg-app-bg/80 backdrop-blur-xl border-b border-app-border/50">
-      <div className="max-w-5xl mx-auto px-6 h-16 md:h-20 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+    <header className="cardxs-premium-header shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+      <AmbientHeaderBackground pathname={location.pathname} />
+      
+      <div className="max-w-5xl mx-auto w-full flex items-center justify-between relative z-10">
+        <div className="logo-greeting-wrapper">
+          {/* Back Button (Existing Feature) */}
           {!isHome && (
-            <Link to="/" className="md:hidden mr-2 p-2 -ml-2 text-app-text-secondary hover:text-app-text transition-colors rounded-full hover:bg-black/5">
-              <ChevronLeft size={24} />
+            <Link to="/" className="p-2 -ml-2 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10 shrink-0">
+              <ChevronLeft size={20} />
             </Link>
           )}
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-app-text rounded-[10px] md:rounded-[12px] flex items-center justify-center shadow-sm">
-              <span className="text-white font-bold text-lg md:text-xl leading-none">C</span>
-            </div>
-            <span className="font-semibold text-lg md:text-xl tracking-tight text-app-text hidden sm:block">CardXS</span>
-          </Link>
+
+          {/* User's Logo Structure */}
+          <div className="cardxs-logo-container anim-fade-scale-in" id="cardxsLogoContainer">
+            <img
+              src="/assets/cardxs-logo.png"
+              alt="CardXS"
+              className="cardxs-logo-image"
+              id="cardxsLogoImage"
+              style={{ display: logoError ? 'none' : 'block' }}
+              onError={() => setLogoError(true)}
+            />
+            <span 
+              className="cardxs-logo-fallback text-elegant-semibold" 
+              id="cardxsLogoFallback"
+              style={{ display: logoError ? 'inline-block' : 'none' }}
+            >
+              CardXS
+            </span>
+          </div>
+
+          {/* User's Greeting Structure */}
+          <div 
+            className="header-greeting text-premium cursor-pointer hover:opacity-80 transition-opacity" 
+            id="headerGreeting"
+            onClick={() => {
+              setTempName(userName === 'there' ? '' : userName);
+              setIsEditingName(true);
+            }}
+          >
+            {greeting}, <span className="user-name" id="userName">{userName}</span>
+          </div>
         </div>
-        <nav className="hidden md:flex items-center gap-8 text-[15px] font-medium text-app-text-secondary">
-          <Link to="/" className={`transition-colors ${isHome ? 'text-app-text' : 'hover:text-app-text'}`}>Dashboard</Link>
-          <Link to="/best-card" className={`transition-colors ${location.pathname === '/best-card' ? 'text-app-text' : 'hover:text-app-text'}`}>Best Card</Link>
-          <Link to="/tools" className={`transition-colors ${location.pathname === '/tools' ? 'text-app-text' : 'hover:text-app-text'}`}>Tools</Link>
-          <Link to="/coach" className={`transition-colors ${location.pathname === '/coach' ? 'text-app-text' : 'hover:text-app-text'}`}>Coach</Link>
-        </nav>
-        <Button variant="ghost" className="hidden md:inline-flex font-medium text-[15px]">Sign In</Button>
+
+        {/* Right: Insight Chip (Existing Feature, Responsive) */}
+        <div className="shrink-0 flex justify-end min-w-0 ml-2">
+          <div className="hidden xs:block">
+            <InsightChip />
+          </div>
+        </div>
       </div>
+
+      {/* Name Editing Modal (Existing Feature) */}
+      <AnimatePresence>
+        {isEditingName && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsEditingName(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-sm bg-white rounded-[32px] p-8 shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-app-primary/10 flex items-center justify-center text-app-primary">
+                    <User size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-app-text">Personalize</h3>
+                    <p className="text-xs text-app-text-secondary">What should we call you?</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsEditingName(false)}
+                  className="p-2 text-app-text-secondary hover:text-app-text transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <Input 
+                  autoFocus
+                  value={tempName}
+                  onChange={(e) => setTempName(e.target.value)}
+                  placeholder="Your name"
+                  className="h-12 text-base rounded-2xl"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                />
+                <Button 
+                  onClick={handleSaveName}
+                  className="w-full h-12 rounded-2xl text-base font-bold"
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
@@ -169,7 +358,7 @@ export default function App() {
           <Toaster position="top-center" />
           <Header />
           
-          <main className="flex-1 pb-24 md:pb-32">
+          <main className="flex-1 pb-24 md:pb-32 -mt-8 pt-8 relative z-0">
             <Routes>
               <Route path="/" element={
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 md:py-8 space-y-6 md:space-y-8">
