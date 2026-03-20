@@ -1,20 +1,30 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 🏦 Visa Sidekick — AI Sales Training Tool for Telecom Retail
 
-# Run and deploy your AI Studio app
+> Built by Xavier Serrao | Live at [visa-sidekick.vercel.app](https://visa-sidekick.vercel.app)
 
-This contains everything you need to run your app locally.
+## What It Does
+Visa Sidekick is an AI-powered sales training tool designed 
+to help T-Mobile Mobile Experts pitch the T-Mobile Visa card 
+to customers with confidence and clarity.
 
-View your app in AI Studio: https://ai.studio/apps/0e97c1bb-e110-4a53-baf5-9a870d917a0d
+## The Problem It Solves
+Retail associates often struggle to explain credit card 
+benefits in a compelling, customer-friendly way. Visa Sidekick 
+gives them instant AI-guided talking points, objection handling, 
+and pitch frameworks — right from their phone on the floor.
 
-## Run Locally
+## Features
+- 🤖 AI-powered pitch generator (Gemini API)
+- 💬 Objection handling scripts
+- 📊 Benefits comparison tool
+- ⚡ Fast, mobile-optimized UI
 
-**Prerequisites:**  Node.js
+## Tech Stack
+- TypeScript + Vite
+- Google Gemini AI API
+- Deployed on Vercel
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Built By
+Xavier Serrao — Retail Associate Manager @ T-Mobile  
+[LinkedIn](https://linkedin.com/in/xavier-serrao05) | 
+[GitHub](https://github.com/goanrox)
