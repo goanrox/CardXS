@@ -1,28 +1,30 @@
-# 🏦 Visa Sidekick — AI Sales Training Tool for Telecom Retail
+# 💳 CardXS — AI-Powered Personal Finance Optimizer
 
-> Built by Xavier Serrao | Live at [visa-sidekick.vercel.app](https://visa-sidekick.vercel.app)
+> Built by Xavier Serrao | Live at [card-xs.vercel.app](https://card-xs.vercel.app)
 
 ## What It Does
-Visa Sidekick is an AI-powered sales training tool designed 
-to help T-Mobile Mobile Experts pitch the T-Mobile Visa card 
-to customers with confidence and clarity.
+CardXS helps users maximize their credit card benefits, 
+track spending, and make smarter financial decisions using 
+AI-powered recommendations.
 
 ## The Problem It Solves
-Retail associates often struggle to explain credit card 
-benefits in a compelling, customer-friendly way. Visa Sidekick 
-gives them instant AI-guided talking points, objection handling, 
-and pitch frameworks — right from their phone on the floor.
+Most people leave hundreds of dollars in credit card rewards 
+on the table every year. CardXS analyzes your spending habits 
+and tells you exactly which card to use for every purchase 
+to maximize cashback, points, and perks.
 
 ## Features
-- 🤖 AI-powered pitch generator (Gemini API)
-- 💬 Objection handling scripts
-- 📊 Benefits comparison tool
-- ⚡ Fast, mobile-optimized UI
+- 🤖 AI-powered card recommendations (Gemini API)
+- 💰 Spending category optimizer
+- 📊 Benefits comparison across cards
+- 🔒 Secure — no card numbers stored
+- ⚡ PWA-enabled — works like a native app
 
 ## Tech Stack
-- TypeScript + Vite
+- TypeScript + Vite + React
 - Google Gemini AI API
-- Deployed on Vercel
+- Node.js server backend
+- Deployed on Vercel (7 deployments)
 
 ## Built By
 Xavier Serrao — Retail Associate Manager @ T-Mobile  
