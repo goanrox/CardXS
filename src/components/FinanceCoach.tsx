@@ -82,11 +82,13 @@ export function FinanceCoach() {
       
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
+        console.error('[Coach] Server error:', errorData);
         throw new Error(errorData.error || 'Sorry, the AI coach is temporarily unavailable. Please try again.');
       }
       
       const data = await res.json();
-      if (!data || typeof data !== 'object') {
+      if (!data || typeof data !== 'object' || !data.answer) {
+        console.error('[Coach] Invalid response format:', data);
         throw new Error('Sorry, the AI coach is temporarily unavailable. Please try again.');
       }
       

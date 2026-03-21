@@ -1,32 +1,20 @@
-# 💳 CardXS — AI-Powered Personal Finance Optimizer
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
 
-> Built by Xavier Serrao | Live at [card-xs.vercel.app](https://card-xs.vercel.app)
+# Run and deploy your AI Studio app
 
-## What It Does
-CardXS helps users maximize their credit card benefits, 
-track spending, and make smarter financial decisions using 
-AI-powered recommendations.
+This contains everything you need to run your app locally.
 
-## The Problem It Solves
-Most people leave hundreds of dollars in credit card rewards 
-on the table every year. CardXS analyzes your spending habits 
-and tells you exactly which card to use for every purchase 
-to maximize cashback, points, and perks.
+View your app in AI Studio: https://ai.studio/apps/0e97c1bb-e110-4a53-baf5-9a870d917a0d
 
-## Features
-- 🤖 AI-powered card recommendations (Gemini API)
-- 💰 Spending category optimizer
-- 📊 Benefits comparison across cards
-- 🔒 Secure — no card numbers stored
-- ⚡ PWA-enabled — works like a native app
+## Run Locally
 
-## Tech Stack
-- TypeScript + Vite + React
-- Google Gemini AI API
-- Node.js server backend
-- Deployed on Vercel (7 deployments)
+**Prerequisites:**  Node.js
 
-## Built By
-Xavier Serrao — Retail Associate Manager @ T-Mobile  
-[LinkedIn](https://linkedin.com/in/xavier-serrao05) | 
-[GitHub](https://github.com/goanrox)
+
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`

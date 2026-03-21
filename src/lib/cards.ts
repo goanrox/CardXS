@@ -1,4 +1,4 @@
-export type Category = 'dining' | 'grocery' | 'gas' | 'travel' | 'drugstore' | 'walmart' | 'amazon' | 'target' | 'online_shopping' | 'general';
+export type Category = 'dining' | 'grocery' | 'gas' | 'travel' | 'drugstore' | 'walmart' | 'amazon' | 'target' | 'online_shopping' | 'rent' | 'general';
 
 export interface CardCap {
   amount: number;
@@ -23,6 +23,9 @@ export interface CreditCard {
   annualFee: number;
   description: string;
   keywords?: string[];
+  supportsRent?: boolean;
+  redemptionValue?: number; // Value per point (e.g. 1.0, 1.25, 1.5)
+  notes?: string;
 }
 
 export interface WalletItem {
@@ -32,7 +35,7 @@ export interface WalletItem {
 }
 
 export const CATEGORIES: Category[] = [
-  'dining', 'grocery', 'gas', 'travel', 'drugstore', 'walmart', 'amazon', 'target', 'online_shopping', 'general'
+  'dining', 'grocery', 'gas', 'travel', 'drugstore', 'walmart', 'amazon', 'target', 'online_shopping', 'rent', 'general'
 ];
 
 export const CATEGORY_DISPLAY_NAMES: Record<Category, string> = {
@@ -45,6 +48,7 @@ export const CATEGORY_DISPLAY_NAMES: Record<Category, string> = {
   'amazon': 'Amazon',
   'target': 'Target',
   'online_shopping': 'Online Shopping',
+  'rent': 'Rent',
   'general': 'Other'
 };
 
@@ -59,7 +63,9 @@ export const CARD_CATALOG: CreditCard[] = [
     network: 'Visa',
     description: '3x points on travel and dining',
     sourceUrl: 'https://creditcards.chase.com/rewards-credit-cards/sapphire/reserve',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    redemptionValue: 1.5,
+    notes: 'Points worth 50% more when redeemed for travel through Chase.'
   },
   {
     id: 'chase-sapphire-preferred',
@@ -71,7 +77,9 @@ export const CARD_CATALOG: CreditCard[] = [
     network: 'Visa',
     description: '3x points on dining, 2x on travel',
     sourceUrl: 'https://creditcards.chase.com/rewards-credit-cards/sapphire/preferred',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    redemptionValue: 1.25,
+    notes: 'Points worth 25% more when redeemed for travel through Chase.'
   },
   {
     id: 'chase-freedom-unlimited',
@@ -84,7 +92,9 @@ export const CARD_CATALOG: CreditCard[] = [
     network: 'Visa',
     description: '1.5% cash back on all purchases',
     sourceUrl: 'https://creditcards.chase.com/cash-back-credit-cards/freedom/unlimited',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    redemptionValue: 1.0,
+    notes: 'Great catch-all card for non-category spend.'
   },
   {
     id: 'amex-gold',
@@ -97,7 +107,9 @@ export const CARD_CATALOG: CreditCard[] = [
     network: 'Amex',
     description: '4x points on dining and groceries',
     sourceUrl: 'https://www.americanexpress.com/us/credit-cards/card/gold-card/',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    redemptionValue: 1.0,
+    notes: 'Excellent for foodies and home cooks.'
   },
   {
     id: 'amex-platinum',
@@ -110,7 +122,9 @@ export const CARD_CATALOG: CreditCard[] = [
     network: 'Amex',
     description: '5x points on flights and hotels',
     sourceUrl: 'https://www.americanexpress.com/us/credit-cards/card/platinum/',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    redemptionValue: 1.0,
+    notes: 'The ultimate travel luxury card.'
   },
   {
     id: 'citi-double-cash',
@@ -122,7 +136,9 @@ export const CARD_CATALOG: CreditCard[] = [
     network: 'Mastercard',
     description: '2% cash back on all purchases',
     sourceUrl: 'https://www.citi.com/credit-cards/citi-double-cash-credit-card',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    redemptionValue: 1.0,
+    notes: 'Simple 2% back on everything.'
   },
   {
     id: 'citi-custom-cash',
@@ -136,7 +152,9 @@ export const CARD_CATALOG: CreditCard[] = [
     network: 'Mastercard',
     description: '5% cash back in your top eligible spend category',
     sourceUrl: 'https://www.citi.com/credit-cards/citi-custom-cash-credit-card',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    redemptionValue: 1.0,
+    notes: '5% back on your highest spend category each month.'
   },
   {
     id: 'discover-it',
@@ -151,7 +169,8 @@ export const CARD_CATALOG: CreditCard[] = [
     network: 'Discover',
     description: '5% cash back on everyday purchases at different places each quarter',
     sourceUrl: 'https://www.discover.com/credit-cards/cash-back/it-card.html',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    redemptionValue: 1.0
   },
   {
     id: 'capital-one-savor-one',
@@ -163,7 +182,8 @@ export const CARD_CATALOG: CreditCard[] = [
     network: 'Mastercard',
     description: '3% cash back on dining, entertainment, and grocery stores',
     sourceUrl: 'https://www.capitalone.com/credit-cards/savorone-dining-rewards/',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    redemptionValue: 1.0
   },
   {
     id: 'capital-one-venture-x',
@@ -176,7 +196,8 @@ export const CARD_CATALOG: CreditCard[] = [
     network: 'Visa',
     description: '2x miles on all purchases',
     sourceUrl: 'https://www.capitalone.com/credit-cards/venture-x/',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    redemptionValue: 1.0
   },
   {
     id: 'capital-one-venture',
@@ -189,7 +210,8 @@ export const CARD_CATALOG: CreditCard[] = [
     network: 'Visa',
     description: '2x miles on all purchases',
     sourceUrl: 'https://www.capitalone.com/credit-cards/venture/',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    redemptionValue: 1.0
   },
   {
     id: 'capital-one-quicksilver',
@@ -201,7 +223,8 @@ export const CARD_CATALOG: CreditCard[] = [
     network: 'Visa',
     description: '1.5% cash back on all purchases',
     sourceUrl: 'https://www.capitalone.com/credit-cards/quicksilver/',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    redemptionValue: 1.0
   },
   {
     id: 'bilt-blue',
@@ -209,12 +232,15 @@ export const CARD_CATALOG: CreditCard[] = [
     issuer: 'Wells Fargo',
     annualFee: 0,
     baseRate: 0.01,
-    categoryRates: { 'dining': 0.03, 'travel': 0.02 },
+    categoryRates: { 'dining': 0.03, 'travel': 0.02, 'rent': 0.01 },
     network: 'Mastercard',
     description: '1x points on rent, 3x on dining, 2x on travel',
     keywords: ['bilt', 'blue', 'rent', 'wells fargo'],
     sourceUrl: 'https://www.biltrewards.com/card',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    supportsRent: true,
+    redemptionValue: 1.25,
+    notes: 'The only card that earns points on rent without fees.'
   },
   {
     id: 'bilt-obsidian',
@@ -222,12 +248,15 @@ export const CARD_CATALOG: CreditCard[] = [
     issuer: 'Wells Fargo',
     annualFee: 0,
     baseRate: 0.01,
-    categoryRates: { 'dining': 0.03, 'travel': 0.02 },
+    categoryRates: { 'dining': 0.03, 'travel': 0.02, 'rent': 0.01 },
     network: 'Mastercard',
     description: '1x points on rent, 3x on dining, 2x on travel (Obsidian Status)',
     keywords: ['bilt', 'obsidian', 'rent', 'wells fargo'],
     sourceUrl: 'https://www.biltrewards.com/card',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    supportsRent: true,
+    redemptionValue: 1.25,
+    notes: 'The only card that earns points on rent without fees.'
   },
   {
     id: 'bilt-palladium',
@@ -235,12 +264,15 @@ export const CARD_CATALOG: CreditCard[] = [
     issuer: 'Wells Fargo',
     annualFee: 0,
     baseRate: 0.01,
-    categoryRates: { 'dining': 0.03, 'travel': 0.02 },
+    categoryRates: { 'dining': 0.03, 'travel': 0.02, 'rent': 0.01 },
     network: 'Mastercard',
     description: '1x points on rent, 3x on dining, 2x on travel (Palladium Status)',
     keywords: ['bilt', 'palladium', 'rent', 'wells fargo'],
     sourceUrl: 'https://www.biltrewards.com/card',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    supportsRent: true,
+    redemptionValue: 1.25,
+    notes: 'The only card that earns points on rent without fees.'
   },
   {
     id: 'amazon-prime-rewards',
@@ -252,7 +284,8 @@ export const CARD_CATALOG: CreditCard[] = [
     network: 'Visa',
     description: '5% cash back at Amazon and Whole Foods',
     sourceUrl: 'https://creditcards.chase.com/cash-back-credit-cards/amazon/prime-visa',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    redemptionValue: 1.0
   },
   {
     id: 'target-redcard',
@@ -264,6 +297,7 @@ export const CARD_CATALOG: CreditCard[] = [
     network: 'Mastercard',
     description: '5% discount at Target',
     sourceUrl: 'https://www.target.com/redcard/about',
-    lastVerified: '2026-03-09'
+    lastVerified: '2026-03-09',
+    redemptionValue: 1.0
   }
 ];

@@ -48,9 +48,9 @@ export function Textarea({ className = '', ...props }: any) {
   );
 }
 
-export function Label({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+export function Label({ children, className = '', ...props }: any) {
   return (
-    <label className={`block text-[12px] font-semibold text-app-text-secondary mb-2 uppercase tracking-wider ${className}`}>
+    <label className={`block text-[12px] font-semibold text-app-text-secondary mb-2 uppercase tracking-wider ${className}`} {...props}>
       {children}
     </label>
   );

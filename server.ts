@@ -1,7 +1,12 @@
 import "dotenv/config";
 import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import { callGroq } from "./server/groq";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
@@ -94,10 +99,12 @@ Ensure the output is valid JSON.`;
     }
   });
 
-  app.post("/api/finance-coach", async (req, res) => {
+  const coachHandler = async (req: express.Request, res: express.Response) => {
     try {
       const { text } = req.body;
       if (!text) return res.status(400).json({ error: "Text is required" });
+
+      console.log(`[API] Coach request received: ${text.substring(0, 50)}...`);
 
       const systemPrompt = `You are a helpful, calm, and professional financial coach. Answer the user's finance question. Return a JSON object with this exact schema:
 {
@@ -109,37 +116,22 @@ Ensure the output is valid JSON. Keep responses concise and practical.`;
       const result = await callGroq(text, systemPrompt, "coach");
       res.json(result);
     } catch (error: any) {
-      console.error("Coach API Error:", error);
-      const errorMessage = error.message === "GROQ_API_KEY is not set." 
-        ? "Groq API Key is missing. Please add GROQ_API_KEY to your environment variables in the Settings menu."
+      console.error("[API] Coach Error:", error.message);
+      
+      const isApiKeyMissing = error.message.includes("GROQ_API_KEY is not set");
+      const errorMessage = isApiKeyMissing
+        ? "Groq API Key is missing. Please add GROQ_API_KEY to your environment variables."
         : "Sorry, the AI coach is temporarily unavailable. Please try again.";
-      res.status(500).json({ error: errorMessage });
+
+      res.status(500).json({ 
+        error: errorMessage,
+        debug: process.env.NODE_ENV !== 'production' ? error.message : undefined
+      });
     }
-  });
+  };
 
-  // Alias for /api/coach as requested
-  app.post("/api/coach", async (req, res) => {
-    try {
-      const { text } = req.body;
-      if (!text) return res.status(400).json({ error: "Text is required" });
-
-      const systemPrompt = `You are a helpful, calm, and professional financial coach. Answer the user's finance question. Return a JSON object with this exact schema:
-{
-  "answer": "Your clear, jargon-free answer",
-  "actionSteps": ["Step 1", "Step 2"]
-}
-Ensure the output is valid JSON. Keep responses concise and practical.`;
-
-      const result = await callGroq(text, systemPrompt, "coach");
-      res.json(result);
-    } catch (error: any) {
-      console.error("Coach API Error:", error);
-      const errorMessage = error.message === "GROQ_API_KEY is not set." 
-        ? "Groq API Key is missing. Please add GROQ_API_KEY to your environment variables in the Settings menu."
-        : "Sorry, the AI coach is temporarily unavailable. Please try again.";
-      res.status(500).json({ error: errorMessage });
-    }
-  });
+  app.post("/api/finance-coach", coachHandler);
+  app.post("/api/coach", coachHandler);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
@@ -149,7 +141,11 @@ Ensure the output is valid JSON. Keep responses concise and practical.`;
     });
     app.use(vite.middlewares);
   } else {
-    app.use(express.static("dist"));
+    const distPath = path.join(process.cwd(), "dist");
+    app.use(express.static(distPath));
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
+    });
   }
 
   app.listen(PORT, "0.0.0.0", () => {

@@ -3,7 +3,7 @@ import { Card, Button, Input, Label } from './ui';
 import { CreditCard, Sparkles, Store, ShoppingCart, Fuel, Utensils, ShoppingBag, Target as TargetIcon, Plus, Loader2, Wallet, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CARD_CATALOG, CATEGORIES, CATEGORY_DISPLAY_NAMES, Category, WalletItem, CreditCard as CreditCardType } from '../lib/cards';
-import { calculateReward } from '../lib/rewardEngine';
+import { calculateReward, getRecommendation, Transaction, Recommendation } from '../lib/rewardEngine';
 import { detectMerchantCategory } from '../lib/merchantMapper';
 import { CardSearchModal } from './CardSearchModal';
 import { InsightCard } from './InsightCard';
@@ -210,7 +210,7 @@ const QUICK_SPEND_OPTIONS = [
   { name: 'Gas', category: 'gas', merchant: '', icon: AnimatedFuel },
   { name: 'Restaurants', category: 'dining', merchant: '', icon: AnimatedUtensils },
   { name: 'Grocery', category: 'grocery', merchant: '', icon: AnimatedShoppingBag },
-  { name: 'Target', category: 'general', merchant: 'Target', icon: AnimatedTarget },
+  { name: 'Rent', category: 'rent', merchant: '', icon: AnimatedTarget },
 ];
 
 const ANIMATION_STEPS = [
@@ -232,8 +232,9 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [animationStep, setAnimationStep] = useState(0);
   const [revealingCardId, setRevealingCardId] = useState<string | null>(null);
-  const [result, setResult] = useState<any>(null);
-  const [displayResult, setDisplayResult] = useState<any>(null);
+  const [result, setResult] = useState<Recommendation | null>(null);
+  const [displayResult, setDisplayResult] = useState<Recommendation | null>(null);
+  const [isRecurring, setIsRecurring] = useState(false);
 
   const handleAddCard = (cardId: string) => {
     addCard(cardId);
@@ -265,13 +266,14 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
       effectiveCategory = detectMerchantCategory(merch);
     }
 
-    // Calculate rewards ONLY for wallet cards
-    const walletResults = walletItems.map(item => {
-      const card = CARD_CATALOG.find(c => c.id === item.cardId);
-      if (!card) return null;
-      const reward = calculateReward(card, effectiveCategory as Category, amt);
-      return { item, card, reward };
-    }).filter(Boolean).sort((a: any, b: any) => b.reward.value - a.reward.value);
+    const transaction: Transaction = {
+      amount: amt,
+      category: effectiveCategory as Category,
+      merchant: merch,
+      recurring: isRecurring
+    };
+
+    const recommendation = getRecommendation(walletItems, transaction);
 
     if (!skipAnimation) {
       setIsAnalyzing(true);
@@ -283,20 +285,18 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
         await new Promise(resolve => setTimeout(resolve, 500));
       }
 
-      if (walletResults.length > 0) {
-        const winnerId = walletResults[0].item.instanceId;
-        setRevealingCardId(winnerId);
+      if (recommendation) {
+        const winnerId = recommendation.winner.cardId;
+        // We need to find the instanceId in walletItems that matches cardId
+        // This is a bit tricky since multiple instances of same card could exist
+        // For now, let's just use the first one found
+        const walletItem = walletItems.find(item => item.cardId === winnerId);
+        if (walletItem) {
+          setRevealingCardId(walletItem.instanceId);
+        }
         
-        // Set result immediately to trigger layoutId transition
-        const bestWallet = walletResults[0];
-        const newResult = {
-          walletResults,
-          bestWallet,
-          effectiveCategory,
-          amount: amt
-        };
-        setResult(newResult);
-        setDisplayResult(newResult);
+        setResult(recommendation);
+        setDisplayResult(recommendation);
         if (onResult) onResult(true);
 
         // Wait for the hero reveal animation duration (900ms)
@@ -305,17 +305,9 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
         setIsAnalyzing(false);
         setRevealingCardId(null);
       }
-    } else if (walletResults.length > 0) {
-      // Handle skipAnimation case
-      const bestWallet = walletResults[0];
-      const newResult = {
-        walletResults,
-        bestWallet,
-        effectiveCategory,
-        amount: amt
-      };
-      setResult(newResult);
-      setDisplayResult(newResult);
+    } else if (recommendation) {
+      setResult(recommendation);
+      setDisplayResult(recommendation);
       if (onResult) onResult(true);
     }
   };
@@ -335,19 +327,15 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
 
   const getBestCardForOption = (optCategory: Category, optMerchant: string, amtVal: number) => {
     if (walletItems.length === 0) return null;
-    let effectiveCategory = optCategory;
-    if (optCategory === 'general' && optMerchant) {
-      effectiveCategory = detectMerchantCategory(optMerchant);
-    }
     
-    const walletResults = walletItems.map(item => {
-      const card = CARD_CATALOG.find(c => c.id === item.cardId);
-      if (!card) return null;
-      const reward = calculateReward(card, effectiveCategory as Category, amtVal);
-      return { item, card, reward };
-    }).filter(Boolean).sort((a: any, b: any) => b.reward.value - a.reward.value);
+    const transaction: Transaction = {
+      amount: amtVal,
+      category: optCategory,
+      merchant: optMerchant
+    };
     
-    return walletResults.length > 0 ? walletResults[0] : null;
+    const recommendation = getRecommendation(walletItems, transaction);
+    return recommendation?.winner || null;
   };
 
   // Trigger Wallet Intelligence Float animation
@@ -430,7 +418,7 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
             {walletItems.map(item => {
               const card = CARD_CATALOG.find(c => c.id === item.cardId);
               if (!card) return null;
-              const isWinner = result?.bestWallet?.item.instanceId === item.instanceId;
+              const isWinner = result?.winner?.cardId === item.cardId;
               
               return (
                 <WalletChip 
@@ -521,7 +509,7 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
                         {bestCardInfo ? (
                           <div className="space-y-0.5">
                             <p className={`text-[10px] font-medium truncate ${isSelected ? 'text-white/60' : 'text-app-text-secondary/70'}`}>
-                              Use {bestCardInfo.item.nickname || bestCardInfo.card.name.split(' ')[0]}
+                              Use {bestCardInfo.cardName.split(' ')[0]}
                             </p>
                             <motion.p 
                               key={`${amtVal}-${isSelected}`}
@@ -530,7 +518,7 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
                               transition={{ duration: 0.3 }}
                               className={`text-[12px] font-bold tracking-tight ${isSelected ? 'text-[#00C805]' : 'text-app-primary'}`}
                             >
-                              {parseFloat(amount) > 0 ? `+$${(bestCardInfo.reward.rate * parseFloat(amount)).toFixed(2)}` : `${(bestCardInfo.reward.rate * 100).toFixed(1)}% back`}
+                              {parseFloat(amount) > 0 ? `+$${(bestCardInfo.estimatedRate * parseFloat(amount)).toFixed(2)}` : `${(bestCardInfo.estimatedRate * 100).toFixed(1)}% back`}
                             </motion.p>
                           </div>
                         ) : (
@@ -623,6 +611,20 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
               </div>
             </div>
 
+            <div className="flex items-center gap-2 mt-4">
+              <input 
+                type="checkbox" 
+                id="recurring" 
+                checked={isRecurring} 
+                onChange={(e) => {
+                  setIsRecurring(e.target.checked);
+                  setResult(null);
+                }}
+                className="w-4 h-4 rounded border-gray-300 text-app-primary focus:ring-app-primary"
+              />
+              <Label htmlFor="recurring" className="mb-0 cursor-pointer">Recurring Purchase</Label>
+            </div>
+
             <Button 
               className="w-full h-12 text-[15px]" 
               onClick={handleFindBestCard}
@@ -683,7 +685,7 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
               <AnimatePresence mode="wait">
                 {activeTab === 'result' && displayResult && (
                   <motion.div
-                    key={`result-${displayResult.bestWallet.item.instanceId}-${displayResult.amount}-${displayResult.effectiveCategory}`}
+                    key={`result-${displayResult.winner.cardId}-${displayResult.winner.estimatedReward}`}
                     initial={{ opacity: 0, y: 12, scale: 0.96, boxShadow: '0 20px 50px rgba(0,0,0,0.1)' }}
                     animate={{ opacity: 1, y: 0, scale: 1, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
                     exit={{ opacity: 0, y: -10, scale: 0.98 }}
@@ -706,10 +708,33 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.9 }}
                       >
-                        <p className="text-[11px] font-bold text-app-primary uppercase tracking-widest mb-1">Top Recommendation</p>
-                        <h3 className="text-2xl font-bold tracking-tight text-app-text">
-                          {displayResult.bestWallet.item.nickname || displayResult.bestWallet.card.name}
-                        </h3>
+                        <div className="flex flex-col mb-1">
+                          <p className="text-[11px] font-bold text-app-primary uppercase tracking-widest">Top Recommendation</p>
+                          <p className="text-[10px] text-app-text-secondary font-medium">Smart category optimization applied</p>
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="text-2xl font-bold tracking-tight text-app-text">
+                            {displayResult.winner.cardName}
+                          </h3>
+                          {displayResult.smartTag && (
+                            <span className="px-1.5 py-0.5 rounded bg-app-primary/10 text-app-primary text-[9px] font-bold uppercase tracking-wider">
+                              {displayResult.smartTag}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className={`w-1.5 h-1.5 rounded-full ${
+                            displayResult.confidence === 'Very High' ? 'bg-[#00C805]' :
+                            displayResult.confidence === 'High' ? 'bg-[#00C805]/80' :
+                            displayResult.confidence === 'Medium' ? 'bg-yellow-500' : 'bg-red-500'
+                          }`} />
+                          <p className="text-[10px] font-semibold text-app-text-secondary">
+                            Confidence: <span className={
+                              displayResult.confidence === 'Very High' || displayResult.confidence === 'High' ? 'text-[#00C805]' :
+                              displayResult.confidence === 'Medium' ? 'text-yellow-600' : 'text-red-600'
+                            }>{displayResult.confidence}</span>
+                          </p>
+                        </div>
                       </motion.div>
                       <motion.div 
                         initial={{ opacity: 0, scale: 0.8 }}
@@ -734,37 +759,43 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
                     <div className="flex flex-col sm:flex-row gap-8 items-center sm:items-start relative z-10">
                       {/* Featured Card Visual */}
                       <div className="relative shrink-0 [perspective:1000px]">
-                        <motion.div 
-                          key={`hero-${displayResult.bestWallet.item.instanceId}-${displayResult.amount}`}
-                          layoutId={`card-visual-${displayResult.bestWallet.item.instanceId}`}
-                          className="w-[160px] h-[100px] rounded-[12px] relative overflow-hidden animate-card-hero animate-card-shadow"
-                          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                          style={{ 
-                            background: `linear-gradient(135deg, ${getCardColor(displayResult.bestWallet.card.issuer, displayResult.bestWallet.card.name)} 0%, ${getCardColor(displayResult.bestWallet.card.issuer, displayResult.bestWallet.card.name)}dd 100%)`,
-                          }}
-                        >
-                          {/* Chip detail */}
-                          <div className="absolute top-4 left-4 w-8 h-6 bg-gradient-to-br from-yellow-200/40 to-yellow-500/40 rounded-[4px] border border-white/20" />
-                          
-                          {/* Premium light sweep effect */}
-                          <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
-                            <div className="absolute inset-0 w-[30%] h-full bg-gradient-to-r from-transparent via-white/60 to-transparent animate-light-sweep" />
-                          </div>
-                          
-                          {/* Card details placeholder lines */}
-                          <div className="absolute bottom-4 left-4 space-y-1.5">
-                            <div className="w-20 h-1.5 bg-white/20 rounded-full" />
-                            <div className="w-12 h-1.5 bg-white/10 rounded-full" />
-                          </div>
-                          
-                          {/* Light sweep effect */}
-                          <motion.div 
-                            initial={{ x: '-150%' }}
-                            animate={{ x: '150%' }}
-                            transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
-                            className="absolute inset-0 w-[200%] bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
-                          />
-                        </motion.div>
+                        {(() => {
+                          const winnerCard = CARD_CATALOG.find(c => c.id === displayResult.winner.cardId);
+                          const cardColor = winnerCard ? getCardColor(winnerCard.issuer, winnerCard.name) : '#000';
+                          return (
+                            <motion.div 
+                              key={`hero-${displayResult.winner.cardId}`}
+                              layoutId={`card-visual-${walletItems.find(i => i.cardId === displayResult.winner.cardId)?.instanceId}`}
+                              className="w-[160px] h-[100px] rounded-[12px] relative overflow-hidden animate-card-hero animate-card-shadow"
+                              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                              style={{ 
+                                background: `linear-gradient(135deg, ${cardColor} 0%, ${cardColor}dd 100%)`,
+                              }}
+                            >
+                              {/* Chip detail */}
+                              <div className="absolute top-4 left-4 w-8 h-6 bg-gradient-to-br from-yellow-200/40 to-yellow-500/40 rounded-[4px] border border-white/20" />
+                              
+                              {/* Premium light sweep effect */}
+                              <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+                                <div className="absolute inset-0 w-[30%] h-full bg-gradient-to-r from-transparent via-white/60 to-transparent animate-light-sweep" />
+                              </div>
+                              
+                              {/* Card details placeholder lines */}
+                              <div className="absolute bottom-4 left-4 space-y-1.5">
+                                <div className="w-20 h-1.5 bg-white/20 rounded-full" />
+                                <div className="w-12 h-1.5 bg-white/10 rounded-full" />
+                              </div>
+                              
+                              {/* Light sweep effect */}
+                              <motion.div 
+                                initial={{ x: '-150%' }}
+                                animate={{ x: '150%' }}
+                                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
+                                className="absolute inset-0 w-[200%] bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
+                              />
+                            </motion.div>
+                          );
+                        })()}
                         
                         {/* Shadow depth */}
                         <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[80%] h-4 bg-black/10 blur-xl rounded-full" />
@@ -777,7 +808,7 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
                           transition={{ delay: 1.0 }}
                         >
                           <p className="text-[11px] font-semibold text-app-text-secondary mb-1 uppercase tracking-wider">Reward Rate</p>
-                          <p className="text-2xl font-bold text-app-text">{formatRate(displayResult.bestWallet.reward.rate)}</p>
+                          <p className="text-2xl font-bold text-app-text">{formatRate(displayResult.winner.estimatedRate)}</p>
                         </motion.div>
                         <motion.div
                           initial={{ opacity: 0, x: 10 }}
@@ -786,7 +817,7 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
                         >
                           <p className="text-[11px] font-semibold text-app-text-secondary mb-1 uppercase tracking-wider">Estimated Reward</p>
                           <p className="text-3xl font-extrabold text-[#00C805]">
-                            <AnimatedCounter value={displayResult.bestWallet.reward.value} duration={600} />
+                            <AnimatedCounter value={displayResult.winner.estimatedReward} duration={600} />
                           </p>
                         </motion.div>
                       </div>
@@ -796,15 +827,26 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 1.2 }}
-                      className="mt-8 pt-6 border-t border-app-border/40 flex items-center justify-between"
+                      className="mt-8 pt-6 border-t border-app-border/40"
                     >
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-app-primary/10 flex items-center justify-center">
-                          <Sparkles size={16} className="text-app-primary" />
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-app-primary/10 flex items-center justify-center">
+                            <Sparkles size={16} className="text-app-primary" />
+                          </div>
+                          <p className="text-[13px] text-app-text-secondary">
+                            {displayResult.explanation}
+                          </p>
                         </div>
-                        <p className="text-[13px] text-app-text-secondary">
-                          Optimized for <span className="font-semibold text-app-text">{CATEGORY_DISPLAY_NAMES[displayResult.effectiveCategory as Category] || displayResult.effectiveCategory}</span>
-                        </p>
+                        
+                        <div className="pl-10 space-y-1">
+                          {displayResult.winner.reasons.map((reason, idx) => (
+                            <p key={idx} className="text-[11px] text-app-text-secondary/80 flex items-center gap-1.5">
+                              <span className="w-1 h-1 rounded-full bg-app-primary/40" />
+                              {reason}
+                            </p>
+                          ))}
+                        </div>
                       </div>
                     </motion.div>
                   </motion.div>
@@ -819,13 +861,16 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
                     transition={{ duration: 0.3, ease: "easeOut" }}
                     className="border border-app-border/60 rounded-[24px] overflow-hidden bg-[#F9FAFB] p-4 space-y-2"
                   >
-                    {displayResult.walletResults.map((res: any, i: number) => (
+                    {displayResult.allResults.map((res: any, i: number) => (
                       <div key={i} className="flex items-center justify-between p-3 rounded-[16px] bg-white border border-app-border/40 shadow-sm">
                         <div>
-                          <p className="text-[14px] font-semibold text-app-text">{res.item.nickname || res.card.name}</p>
-                          <p className="text-[12px] text-app-text-secondary">{formatRate(res.reward.rate)} {res.reward.isBase ? 'base rate' : 'category rate'}</p>
+                          <p className="text-[14px] font-semibold text-app-text">{res.cardName}</p>
+                          <p className="text-[12px] text-app-text-secondary">{formatRate(res.estimatedRate)} {res.isBase ? 'base rate' : 'category rate'}</p>
                         </div>
-                        <p className="text-[14px] font-semibold text-app-text">{formatCurrency(res.reward.value)}</p>
+                        <div className="text-right">
+                          <p className="text-[14px] font-semibold text-app-text">{formatCurrency(res.estimatedReward)}</p>
+                          <p className="text-[10px] text-app-text-secondary">Score: {res.score.toFixed(0)}</p>
+                        </div>
                       </div>
                     ))}
                   </motion.div>
@@ -842,16 +887,16 @@ export function BestCardTool({ onResult }: { onResult?: (isBest: boolean) => voi
                   >
                     <div>
                       <p className="text-[12px] font-semibold text-app-text-secondary uppercase tracking-wider mb-1">Purchase Amount</p>
-                      <p className="text-[16px] font-medium text-app-text">{formatCurrency(displayResult.amount)}</p>
+                      <p className="text-[16px] font-medium text-app-text">{formatCurrency(displayResult.allResults[0].estimatedReward / displayResult.allResults[0].estimatedRate)}</p>
                     </div>
                     <div>
                       <p className="text-[12px] font-semibold text-app-text-secondary uppercase tracking-wider mb-1">Category Used</p>
-                      <p className="text-[16px] font-medium text-app-text">{CATEGORY_DISPLAY_NAMES[displayResult.effectiveCategory as Category] || displayResult.effectiveCategory}</p>
+                      <p className="text-[16px] font-medium text-app-text">{CATEGORY_DISPLAY_NAMES[category as Category] || category}</p>
                     </div>
                     <div className="pt-3 border-t border-app-border/50">
                       <p className="text-[12px] font-semibold text-app-text-secondary uppercase tracking-wider mb-1">Annual Potential</p>
                       <p className="text-[15px] text-app-text">
-                        {formatCurrency(displayResult.bestWallet.reward.value * 12)} per year <span className="text-app-text-secondary font-normal">(if spent monthly)</span>
+                        {formatCurrency(displayResult.winner.estimatedReward * 12)} per year <span className="text-app-text-secondary font-normal">(if spent monthly)</span>
                       </p>
                     </div>
                   </motion.div>
